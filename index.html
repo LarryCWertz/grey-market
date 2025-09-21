@@ -100,10 +100,35 @@
     </div>
   </section>
 
-  <script>
-    function googleLogin() {
-      alert("Real Google Login will be added here once Firebase is connected.");
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
+    authDomain: "greymarket-984bb.firebaseapp.com",
+    projectId: "greymarket-984bb",
+    storageBucket: "greymarket-984bb.firebasestorage.app",
+    messagingSenderId: "442724703010",
+    appId: "1:442724703010:web:2156d3903678262aeba37b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // Attach to your button
+  window.googleLogin = async function() {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      alert(Welcome ${user.displayName}!);
+      window.location.href = "index.html"; // redirect to home after login
+    } catch (error) {
+      console.error(error);
+      alert("Login failed: " + error.message);
     }
-  </script>
+  }
+</script>
 </body>
 </html>
