@@ -1,82 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grey Market 🚀 | Login</title>
-  <style>
-    body {
-      background-color: #111;
-      color: #eee;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+<button id="googleLogin" class="btn">Login with Google</button>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
+    authDomain: "greymarket-984bb.firebaseapp.com",
+    projectId: "greymarket-984bb",
+    storageBucket: "greymarket-984bb.firebasestorage.app",
+    messagingSenderId: "442724703010",
+    appId: "1:442724703010:web:2156d3903678262aeba37b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  document.getElementById("googleLogin").addEventListener("click", async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      alert(Welcome ${user.displayName}!);
+      window.location.href = "index.html";
+    } catch (error) {
+      console.error(error);
+      alert("Login failed: " + error.message);
     }
-    h1 {
-      margin-bottom: 1rem;
-      color: orange;
-    }
-    .btn {
-      background: orange;
-      color: #111;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      margin: 0.5rem;
-      transition: 0.2s;
-    }
-    .btn:hover {
-      background: #ffb84d;
-    }
-  </style>
-</head>
-<body>
-  <h1>Grey Market 🚀</h1>
-  <p>Login to access your account</p>
-
-  <!-- Google Login Button -->
-  <button id="googleLogin" class="btn">Login with Google</button>
-
-  <!-- Firebase SDKs -->
-  <script type="module">
-    // Import Firebase SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    // Your config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
-      authDomain: "greymarket-984bb.firebaseapp.com",
-      projectId: "greymarket-984bb",
-      storageBucket: "greymarket-984bb.firebasestorage.app",
-      messagingSenderId: "442724703010",
-      appId: "1:442724703010:web:2156d3903678262aeba37b"
-    };
-
-    // Init Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    // Google login
-    document.getElementById("googleLogin").addEventListener("click", async () => {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        alert(`Welcome ${user.displayName}!`);
-        // redirect to homepage after login
-        window.location.href = "index.html";
-      } catch (error) {
-        console.error(error);
-        alert("Login failed: " + error.message);
-      }
-    });
-  </script>
-</body>
-</html>
+  });
+</script>
