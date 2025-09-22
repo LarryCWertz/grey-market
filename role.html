@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grey Market - Choose Role 🚀</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #eee;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .role-container {
+      background: #1c1c1c;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+    }
+    .role-container h1 {
+      font-size: 1.8rem;
+      margin: 0 0 1rem;
+      color: orange;
+    }
+    .role-container p {
+      color: #bbb;
+      margin: 0 0 1.5rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      background: orange;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 0.5rem;
+      width: 100%;
+    }
+    button:hover {
+      background: #ffb84d;
+    }
+  </style>
+</head>
+<body>
+  <div class="role-container">
+    <h1>Choose Your Role</h1>
+    <p>Are you buying or selling on Grey Market?</p>
+    <button id="buyer-btn">I’m a Buyer</button>
+    <button id="seller-btn">I’m a Seller</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
+      authDomain: "greymarket-984bb.firebaseapp.com",
+      projectId: "greymarket-984bb",
+      storageBucket: "greymarket-984bb.firebasestorage.app",
+      messagingSenderId: "442724703010",
+      appId: "1:442724703010:web:2156d3903678262aeba37b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        alert("Please log in to choose a role.");
+        window.location.href = "index.html";
+      }
+    });
+
+    document.getElementById("buyer-btn").addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          await setDoc(doc(db, "users", user.uid), {
+            role: "buyer",
+            displayName: user.displayName,
+            email: user.email,
+            createdAt: new Date()
+          });
+          window.location.href = "index.html";
+        } catch (error) {
+          alert("Error setting role: " + error.message);
+        }
+      }
+    });
+
+    document.getElementById("seller-btn").addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          await setDoc(doc(db, "users", user.uid), {
+            role: "seller",
+            displayName: user.displayName,
+            email: user.email,
+            createdAt: new Date()
+          });
+          window.location.href = "upload.html";
+        } catch (error) {
+          alert("Error setting role: " + error.message);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
