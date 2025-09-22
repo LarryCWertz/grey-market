@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grey Market 🚀</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #eee;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      padding: 2rem 1rem;
+    }
+    header h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+    header p {
+      color: #bbb;
+      margin: 0.5rem 0 0;
+    }
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .item {
+      background: #1c1c1c;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .item:hover {
+      transform: scale(1.05);
+      background: #292929;
+    }
+    .item h3 {
+      margin: 0 0 0.5rem;
+      color: orange;
+    }
+    .item p {
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      background: orange;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ffb84d;
+    }
+    .upload-form {
+      background: #1c1c1c;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 500px;
+      margin: 2rem auto;
+      display: none;
+    }
+    .upload-form input, .upload-form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 6px;
+      background: #333;
+      color: #eee;
+    }
+    .upload-form button {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Grey Market 🚀</h1>
+    <p>Your all-in-one hub — free version</p>
+  </header>
+
+  <section class="menu">
+    <div class="item">
+      <h3>Enter Grey Market</h3>
+      <p>Login as Buyer or Seller</p>
+      <button id="login-btn">Login with Google</button>
+    </div>
+    <div class="item">
+      <h3>Seller Upload</h3>
+      <p>Upload your files to sell</p>
+      <button id="upload-btn">Upload Item</button>
+    </div>
+    <div class="item">
+      <h3>Rizz Pack</h3>
+      <p>Lines & vibes to keep convos alive.</p>
+    </div>
+    <div class="item">
+      <h3>Python Scripts</h3>
+      <p>Useful mini-scripts like JPG→XML converter.</p>
+    </div>
+    <div class="item">
+      <h3>PES Mods</h3>
+      <p>Patch your game, keep it fresh.</p>
+    </div>
+    <div class="item">
+      <h3>Music</h3>
+      <p>Free beats, vibes, and loops.</p>
+    </div>
+    <div class="item">
+      <h3>Game Sensitivity</h3>
+      <p>COD, Free Fire & more configs.</p>
+    </div>
+  </section>
+
+  <section class="upload-form" id="upload-form">
+    <h3>Upload Your Item</h3>
+    <input type="text" id="item-name" placeholder="Item Name (e.g., Rizz Pack)">
+    <textarea id="item-description" placeholder="Describe your item"></textarea>
+    <input type="text" id="item-link" placeholder="Google Drive/Mega Link">
+    <input type="number" id="item-price" placeholder="Price (e.g., 5 for $5)">
+    <button id="submit-upload">Submit for Review</button>
+  </section>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
+      authDomain: "greymarket-984bb.firebaseapp.com",
+      projectId: "greymarket-984bb",
+      storageBucket: "greymarket-984bb.firebasestorage.app",
+      messagingSenderId: "442724703010",
+      appId: "1:442724703010:web:2156d3903678262aeba37b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.querySelector(".menu").style.display = "grid";
+        document.getElementById("upload-btn").style.display = "block";
+        console.log("Welcome, " + user.displayName);
+      } else {
+        document.querySelector(".menu").style.display = "none";
+        document.getElementById("upload-btn").style.display = "none";
+        document.getElementById("upload-form").style.display = "none";
+        alert("Please log in to see the marketplace.");
+      }
+    });
+
+    getRedirectResult(auth).then((result) => {
+      if (result) {
+        console.log("Logged in: " + result.user.displayName);
+      }
+    }).catch((error) => {
+      console.error("Login error:", error.code, error.message);
+      alert("Login failed: " + error.message);
+    });
+
+    document.getElementById("login-btn").addEventListener("click", () => {
+      try {
+        signInWithRedirect(auth, provider);
+      } catch (error) {
+        console.error("Redirect error:", error.code, error.message);
+        alert("Can’t start login: " + error.message);
+      }
+    });
+
+    document.getElementById("upload-btn").addEventListener("click", () => {
+      const uploadForm = document.getElementById("upload-form");
+      uploadForm.style.display = uploadForm.style.display === "none" ? "block" : "none";
+    });
+
+    document.getElementById("submit-upload").addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("You need to log in to upload.");
+        return;
+      }
+      const name = document.getElementById("item-name").value;
+      const description = document.getElementById("item-description").value;
+      const link = document.getElementById("item-link").value;
+      const price = document.getElementById("item-price").value;
+      if (!name || !description || !link || !price) {
+        alert("Fill out all fields.");
+        return;
+      }
+      try {
+        await addDoc(collection(db, "uploads"), {
+          sellerId: user.uid,
+          name: name,
+          description: description,
+          link: link,
+          price: parseFloat(price),
+          status: "pending",
+          createdAt: new Date()
+        });
+        alert("Item submitted for review!");
+        document.getElementById("upload-form").style.display = "none";
+        document.getElementById("item-name").value = "";
+        document.getElementById("item-description").value = "";
+        document.getElementById("item-link").value = "";
+        document.getElementById("item-price").value = "";
+      } catch (error) {
+        alert("Upload failed: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
