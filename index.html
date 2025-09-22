@@ -79,6 +79,11 @@
       <button id="login-btn">Login with Google</button>
     </div>
     <div class="item">
+      <h3>Seller Upload</h3>
+      <p>Upload your files to sell</p>
+      <button id="upload-btn" onclick="window.location.href='upload.html'">Upload Item</button>
+    </div>
+    <div class="item">
       <h3>Rizz Pack</h3>
       <p>Lines & vibes to keep convos alive.</p>
     </div>
@@ -103,6 +108,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
@@ -115,14 +121,22 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
-        document.querySelector(".menu").style.display = "grid";
-        console.log("Welcome, " + user.displayName);
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists() || !userDoc.data().role) {
+          window.location.href = "role.html";
+        } else {
+          document.querySelector(".menu").style.display = "grid";
+          document.getElementById("upload-btn").style.display = userDoc.data().role === "seller" ? "block" : "none";
+          console.log("Welcome, " + user.displayName);
+        }
       } else {
         document.querySelector(".menu").style.display = "none";
+        document.getElementById("upload-btn").style.display = "none";
         alert("Please log in to see the marketplace.");
       }
     });
@@ -132,11 +146,17 @@
         console.log("Logged in: " + result.user.displayName);
       }
     }).catch((error) => {
+      console.error("Login error:", error.code, error.message);
       alert("Login failed: " + error.message);
     });
 
     document.getElementById("login-btn").addEventListener("click", () => {
-      signInWithRedirect(auth, provider);
+      try {
+        signInWithRedirect(auth, provider);
+      } catch (error) {
+        console.error("Redirect error:", error.code, error.message);
+        alert("Can’t start login: " + error.message);
+      }
     });
   </script>
 </body>
