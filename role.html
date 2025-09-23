@@ -76,10 +76,16 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         alert("Please log in to choose a role.");
         window.location.href = "index.html";
+      } else {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && userDoc.data().role) {
+          const role = userDoc.data().role;
+          window.location.href = role === "seller" ? "upload.html" : "index.html";
+        }
       }
     });
 
