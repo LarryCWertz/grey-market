@@ -79,11 +79,6 @@
       <button id="login-btn">Login with Google</button>
     </div>
     <div class="item">
-      <h3>Seller Upload</h3>
-      <p>Upload your files to sell</p>
-      <button id="upload-btn" onclick="window.location.href='upload.html'">Upload Item</button>
-    </div>
-    <div class="item">
       <h3>Rizz Pack</h3>
       <p>Lines & vibes to keep convos alive.</p>
     </div>
@@ -127,16 +122,14 @@
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (!userDoc.exists() || !userDoc.data().role) {
+        if (!userDoc.exists() || !userDoc.data()?.role) {
           window.location.href = "role.html";
         } else {
           document.querySelector(".menu").style.display = "grid";
-          document.getElementById("upload-btn").style.display = userDoc.data().role === "seller" ? "block" : "none";
           console.log("Welcome, " + user.displayName);
         }
       } else {
         document.querySelector(".menu").style.display = "none";
-        document.getElementById("upload-btn").style.display = "none";
         alert("Please log in to see the marketplace.");
       }
     });
@@ -144,6 +137,7 @@
     getRedirectResult(auth).then((result) => {
       if (result) {
         console.log("Logged in: " + result.user.displayName);
+        window.location.href = "role.html";
       }
     }).catch((error) => {
       console.error("Login error:", error.code, error.message);
