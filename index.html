@@ -52,16 +52,16 @@
       font-size: 0.9rem;
       color: #aaa;
     }
-    button {
+    .login-link {
+      display: inline-block;
+      margin: 1rem;
       padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 6px;
       background: orange;
       color: #111;
-      font-weight: bold;
-      cursor: pointer;
+      text-decoration: none;
+      border-radius: 6px;
     }
-    button:hover {
+    .login-link:hover {
       background: #ffb84d;
     }
   </style>
@@ -70,14 +70,10 @@
   <header>
     <h1>Grey Market 🚀</h1>
     <p>Your all-in-one hub — free version</p>
+    <a href="login.html" class="login-link">Login to Access Marketplace</a>
   </header>
 
   <section class="menu">
-    <div class="item">
-      <h3>Enter Grey Market</h3>
-      <p>Login as Buyer or Seller</p>
-      <button id="login-btn">Login with Google</button>
-    </div>
     <div class="item">
       <h3>Rizz Pack</h3>
       <p>Lines & vibes to keep convos alive.</p>
@@ -102,7 +98,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -117,7 +113,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -126,30 +121,13 @@
           window.location.href = "role.html";
         } else {
           document.querySelector(".menu").style.display = "grid";
+          document.querySelector(".login-link").style.display = "none";
           console.log("Welcome, " + user.displayName);
         }
       } else {
         document.querySelector(".menu").style.display = "none";
+        document.querySelector(".login-link").style.display = "inline-block";
         alert("Please log in to see the marketplace.");
-      }
-    });
-
-    getRedirectResult(auth).then((result) => {
-      if (result) {
-        console.log("Logged in: " + result.user.displayName);
-        window.location.href = "role.html";
-      }
-    }).catch((error) => {
-      console.error("Login error:", error.code, error.message);
-      alert("Login failed: " + error.message);
-    });
-
-    document.getElementById("login-btn").addEventListener("click", () => {
-      try {
-        signInWithRedirect(auth, provider);
-      } catch (error) {
-        console.error("Redirect error:", error.code, error.message);
-        alert("Can’t start login: " + error.message);
       }
     });
   </script>
