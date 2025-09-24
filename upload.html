@@ -83,42 +83,17 @@
     <button id="submit-upload">Submit for Review</button>
   </section>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "seller") {
+      alert("Please log in as a seller to upload items.");
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("upload-form").style.display = "block";
+      console.log("Welcome, " + user.displayName);
+    }
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
-      authDomain: "greymarket-984bb.firebaseapp.com",
-      projectId: "greymarket-984bb",
-      storageBucket: "greymarket-984bb.firebasestorage.app",
-      messagingSenderId: "442724703010",
-      appId: "1:442724703010:web:2156d3903678262aeba37b"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("upload-form").style.display = "block";
-        console.log("Welcome, " + user.displayName);
-      } else {
-        document.getElementById("upload-form").style.display = "none";
-        alert("Please log in to upload items.");
-        window.location.href = "index.html";
-      }
-    });
-
-    document.getElementById("submit-upload").addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("You need to log in to upload.");
-        window.location.href = "index.html";
-        return;
-      }
+    document.getElementById("submit-upload").addEventListener("click", () => {
       const name = document.getElementById("item-name").value;
       const description = document.getElementById("item-description").value;
       const link = document.getElementById("item-link").value;
@@ -127,25 +102,23 @@
         alert("Fill out all fields.");
         return;
       }
-      try {
-        await addDoc(collection(db, "uploads"), {
-          sellerId: user.uid,
-          name: name,
-          description: description,
-          link: link,
-          price: parseFloat(price),
-          status: "pending",
-          createdAt: new Date()
-        });
-        alert("Item submitted for review!");
-        document.getElementById("item-name").value = "";
-        document.getElementById("item-description").value = "";
-        document.getElementById("item-link").value = "";
-        document.getElementById("item-price").value = "";
-        window.location.href = "index.html";
-      } catch (error) {
-        alert("Upload failed: " + error.message);
-      }
+      const uploads = JSON.parse(localStorage.getItem("uploads") || "[]");
+      uploads.push({
+        sellerId: user.uid,
+        name: name,
+        description: description,
+        link: link,
+        price: parseFloat(price),
+        status: "pending",
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem("uploads", JSON.stringify(uploads));
+      alert("Item submitted for review!");
+      document.getElementById("item-name").value = "";
+      document.getElementById("item-description").value = "";
+      document.getElementById("item-link").value = "";
+      document.getElementById("item-price").value = "";
+      window.location.href = "index.html";
     });
   </script>
 </body>
