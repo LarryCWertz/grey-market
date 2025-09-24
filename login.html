@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grey Market - Login 🚀</title>
+  <meta name="google-signin-client_id" content="489878275553-nqhcbj2s5oqvkhm1eg92fnqsnn2su34d.apps.googleusercontent.com">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,59 +23,28 @@
       margin-bottom: 1rem;
       color: orange;
     }
-    button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 6px;
-      background: orange;
-      color: #111;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #ffb84d;
-    }
   </style>
 </head>
 <body>
   <h1>Grey Market Login</h1>
-  <button id="googleLogin">Login with Google</button>
+  <div id="g_id_onload"
+       data-client_id="489878275553-nqhcbj2s5oqvkhm1eg92fnqsnn2su34d.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_black" data-text="sign_in_with" data-shape="rectangular"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
-      authDomain: "greymarket-984bb.firebaseapp.com",
-      projectId: "greymarket-984bb",
-      storageBucket: "greymarket-984bb.firebasestorage.app",
-      messagingSenderId: "442724703010",
-      appId: "1:442724703010:web:2156d3903678262aeba37b"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    getRedirectResult(auth).then((result) => {
-      if (result) {
-        console.log("Logged in: " + result.user.displayName);
-        window.location.href = "role.html";
-      }
-    }).catch((error) => {
-      console.error("Login error:", error.code, error.message);
-      alert("Login failed: " + error.message);
-    });
-
-    document.getElementById("googleLogin").addEventListener("click", () => {
-      try {
-        signInWithRedirect(auth, provider);
-      } catch (error) {
-        console.error("Redirect error:", error.code, error.message);
-        alert("Can’t start login: " + error.message);
-      }
-    });
+  <script>
+    function handleCredentialResponse(response) {
+      const data = JSON.parse(atob(response.credential.split(".")[1]));
+      localStorage.setItem("user", JSON.stringify({
+        uid: data.sub,
+        displayName: data.name,
+        email: data.email
+      }));
+      console.log("Logged in: " + data.name);
+      window.location.href = "role.html";
+    }
   </script>
 </body>
 </html>
