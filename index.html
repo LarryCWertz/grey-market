@@ -96,40 +96,17 @@
     </div>
   </section>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBMqDRiBgtd-T73o9O2Ui84xR9Z-V2HRYg",
-      authDomain: "greymarket-984bb.firebaseapp.com",
-      projectId: "greymarket-984bb",
-      storageBucket: "greymarket-984bb.firebasestorage.app",
-      messagingSenderId: "442724703010",
-      appId: "1:442724703010:web:2156d3903678262aeba37b"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (!userDoc.exists() || !userDoc.data()?.role) {
-          window.location.href = "role.html";
-        } else {
-          document.querySelector(".menu").style.display = "grid";
-          document.querySelector(".login-link").style.display = "none";
-          console.log("Welcome, " + user.displayName);
-        }
-      } else {
-        document.querySelector(".menu").style.display = "none";
-        document.querySelector(".login-link").style.display = "inline-block";
-        alert("Please log in to see the marketplace.");
-      }
-    });
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      document.querySelector(".menu").style.display = "grid";
+      document.querySelector(".login-link").style.display = "none";
+      console.log("Welcome, " + user.displayName);
+    } else {
+      document.querySelector(".menu").style.display = "none";
+      document.querySelector(".login-link").style.display = "inline-block";
+      alert("Please log in to see the marketplace.");
+    }
   </script>
 </body>
 </html>
