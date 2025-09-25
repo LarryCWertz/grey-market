@@ -13,6 +13,7 @@
       padding: 0;
       text-align: center;
       transition: all 0.3s ease;
+      overflow-x: hidden;
     }
     header {
       padding: 1rem;
@@ -25,41 +26,40 @@
     }
     .profile-btn {
       position: fixed;
-      top: 10px;
-      right: 10px;
-      width: 40px;
-      height: 40px;
+      top: 50%;
+      right: 0;
+      width: 30px;
+      height: 60px;
       background: orange;
-      border-radius: 50%;
+      border-radius: 6px 0 0 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.2rem;
       font-weight: bold;
       color: #111;
-      cursor: pointer;
-      animation: pulse 2s infinite;
+      cursor: grab;
       z-index: 1000;
+      box-shadow: 0 0 10px rgba(255, 165, 0, 0.7);
     }
-    .profile-btn:hover {
-      background: #ffb84d;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    .profile-container {
-      max-width: 600px;
-      margin: 2rem auto;
+    .profile-btn:active { cursor: grabbing; }
+    .profile-panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      height: 100%;
       background: #1c1c1c;
+      transition: right 0.5s ease;
+      z-index: 999;
       padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+      box-sizing: border-box;
     }
+    .profile-panel.active { right: 0; }
     .profile-card {
       perspective: 1000px;
-      margin-bottom: 1rem;
+      margin: 1rem auto;
+      max-width: 600px;
     }
     .card-inner {
       position: relative;
@@ -82,16 +82,18 @@
     .card-back {
       transform: rotateY(180deg);
     }
-    .profile-container input, .profile-container textarea {
+    .profile-panel input, .profile-panel textarea {
       width: 100%;
+      max-width: 500px;
       padding: 0.5rem;
-      margin: 0.5rem 0;
+      margin: 0.5rem auto;
       border: none;
       border-radius: 6px;
       background: #333;
       color: #eee;
+      display: block;
     }
-    .profile-container button {
+    .profile-panel button {
       padding: 0.5rem 1rem;
       border: none;
       border-radius: 6px;
@@ -101,20 +103,21 @@
       cursor: pointer;
       margin: 0.5rem;
     }
-    .profile-container button:hover {
+    .profile-panel button:hover {
       background: #ffb84d;
     }
     .dashboard {
       margin-top: 2rem;
-      text-align: left;
+      text-align: center;
     }
     .dashboard h3 {
       color: orange;
-      margin-bottom: 1rem;
     }
     .dashboard ul {
       list-style: none;
       padding: 0;
+      max-width: 500px;
+      margin: 0 auto;
     }
     .dashboard li {
       background: #333;
@@ -129,18 +132,25 @@
       width: 100px;
     }
     .neon { background-color: #0a1a2b; color: #00ffcc; }
-    .neon .profile-container { box-shadow: 0 0 20px rgba(0, 255, 204, 0.7); }
+    .neon .profile-panel { box-shadow: 0 0 20px rgba(0, 255, 204, 0.7); }
     .arcade { background-color: #1a0a2b; color: #ff00ff; font-family: 'Courier New', monospace; }
-    .arcade .profile-container { box-shadow: 0 0 20px rgba(255, 0, 255, 0.7); }
+    .arcade .profile-panel { box-shadow: 0 0 20px rgba(255, 0, 255, 0.7); }
+    @media (max-width: 600px) {
+      .profile-panel { padding: 1rem; }
+      .profile-card, .dashboard, .theme-switcher, input, textarea {
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Grey Market - Profile 🚀</h1>
-    <div class="profile-btn" onclick="window.location.href='profile.html'">P</div>
   </header>
-
-  <div class="profile-container">
+  <div class="profile-btn">↔</div>
+  <div class="profile-panel">
     <div class="profile-card">
       <div class="card-inner">
         <div class="card-front">
@@ -193,8 +203,7 @@
     }
 
     function getSalesCount() {
-      const uploads = JSON.parse(localStorage.getItem("uploads") || "[]").filter(u => u.status === "approved");
-      return uploads.length;
+      return JSON.parse(localStorage.getItem("uploads") || "[]").filter(u => u.status === "approved").length;
     }
 
     function getPurchaseCount() {
@@ -239,10 +248,44 @@
     function setTheme(theme) {
       document.body.className = theme;
       localStorage.setItem("user", JSON.stringify({ ...user, theme }));
+      applyTheme(theme);
     }
 
     function applyTheme(theme) {
       document.body.className = theme;
+    }
+
+    // Draggable profile button
+    const btn = document.querySelector(".profile-btn");
+    const panel = document.querySelector(".profile-panel");
+    let isDragging = false;
+    let startX;
+
+    btn.addEventListener("mousedown", startDragging);
+    btn.addEventListener("touchstart", startDragging);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("touchmove", drag);
+    document.addEventListener("mouseup", stopDragging);
+    document.addEventListener("touchend", stopDragging);
+
+    function startDragging(e) {
+      isDragging = true;
+      startX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+      panel.classList.add("active");
+    }
+
+    function drag(e) {
+      if (!isDragging) return;
+      const x = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+      if (startX - x > 50) {
+        panel.classList.add("active");
+      } else {
+        panel.classList.remove("active");
+      }
+    }
+
+    function stopDragging() {
+      isDragging = false;
     }
   </script>
 </body>
