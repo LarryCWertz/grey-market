@@ -12,6 +12,7 @@
       margin: 0;
       padding: 0;
       text-align: center;
+      overflow: hidden; /* Prevent page movement */
     }
     header {
       padding: 2rem 1rem;
@@ -67,12 +68,12 @@
     }
     .profile-btn {
       position: fixed;
-      top: 50%;
-      right: 0;
-      width: 30px;
-      height: 60px;
+      top: 10px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
       background: orange;
-      border-radius: 6px 0 0 6px;
+      border-radius: 0 6px 6px 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -80,7 +81,7 @@
       font-weight: bold;
       color: #111;
       cursor: grab;
-      z-index: 1000;
+      z-index: 1001;
       box-shadow: 0 0 10px rgba(255, 165, 0, 0.7);
     }
     .profile-btn:active { cursor: grabbing; }
@@ -89,7 +90,7 @@
 <body>
   <header>
     <h1>Grey Market 🚀</h1>
-    <p>Your all-in-one hub — free version</p>
+    <p>Your all-in-one hub —GenZ Market</p>
     <a href="login.html" class="login-link">Login to Access Marketplace</a>
     <div class="profile-btn">↔</div>
   </header>
