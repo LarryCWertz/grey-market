@@ -13,7 +13,7 @@
       padding: 0;
       text-align: center;
       transition: all 0.3s ease;
-      overflow-x: hidden;
+      overflow: hidden; /* Prevent page movement */
     }
     header {
       padding: 1rem;
@@ -26,12 +26,12 @@
     }
     .profile-btn {
       position: fixed;
-      top: 50%;
-      right: 0;
-      width: 30px;
-      height: 60px;
+      top: 10px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
       background: orange;
-      border-radius: 6px 0 0 6px;
+      border-radius: 0 6px 6px 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -39,27 +39,28 @@
       font-weight: bold;
       color: #111;
       cursor: grab;
-      z-index: 1000;
+      z-index: 1001;
       box-shadow: 0 0 10px rgba(255, 165, 0, 0.7);
     }
     .profile-btn:active { cursor: grabbing; }
     .profile-panel {
       position: fixed;
       top: 0;
-      right: -100%;
+      left: -100%;
       width: 100%;
       height: 100%;
       background: #1c1c1c;
-      transition: right 0.5s ease;
-      z-index: 999;
+      transition: left 0.5s ease;
+      z-index: 1000;
       padding: 2rem;
       box-sizing: border-box;
+      overflow-y: auto;
     }
-    .profile-panel.active { right: 0; }
+    .profile-panel.active { left: 0; }
     .profile-card {
-      perspective: 1000px;
+      max-width: 500px;
       margin: 1rem auto;
-      max-width: 600px;
+      perspective: 1000px;
     }
     .card-inner {
       position: relative;
@@ -68,7 +69,7 @@
       transition: transform 0.6s;
       transform-style: preserve-3d;
     }
-    .profile-card:hover .card-inner {
+    .profile-card:hover .card-inner, .profile-card.touched .card-inner {
       transform: rotateY(180deg);
     }
     .card-front, .card-back {
@@ -78,13 +79,14 @@
       padding: 1rem;
       background: #222;
       border-radius: 8px;
+      text-align: center;
     }
     .card-back {
       transform: rotateY(180deg);
     }
     .profile-panel input, .profile-panel textarea {
       width: 100%;
-      max-width: 500px;
+      max-width: 400px;
       padding: 0.5rem;
       margin: 0.5rem auto;
       border: none;
@@ -101,13 +103,15 @@
       color: #111;
       font-weight: bold;
       cursor: pointer;
-      margin: 0.5rem;
+      margin: 0.5rem auto;
+      display: block;
     }
     .profile-panel button:hover {
       background: #ffb84d;
     }
     .dashboard {
-      margin-top: 2rem;
+      max-width: 500px;
+      margin: 1rem auto;
       text-align: center;
     }
     .dashboard h3 {
@@ -116,7 +120,7 @@
     .dashboard ul {
       list-style: none;
       padding: 0;
-      max-width: 500px;
+      max-width: 400px;
       margin: 0 auto;
     }
     .dashboard li {
@@ -126,7 +130,11 @@
       border-radius: 6px;
     }
     .theme-switcher {
-      margin-top: 1rem;
+      margin: 1rem auto;
+      max-width: 400px;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
     }
     .theme-switcher button {
       width: 100px;
@@ -137,11 +145,12 @@
     .arcade .profile-panel { box-shadow: 0 0 20px rgba(255, 0, 255, 0.7); }
     @media (max-width: 600px) {
       .profile-panel { padding: 1rem; }
-      .profile-card, .dashboard, .theme-switcher, input, textarea {
-        max-width: 100%;
+      .profile-card, .dashboard, .theme-switcher, input, textarea, button {
+        max-width: 90%;
         margin-left: auto;
         margin-right: auto;
       }
+      .card-front, .card-back { font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -154,16 +163,17 @@
     <div class="profile-card">
       <div class="card-inner">
         <div class="card-front">
-          <h3 id="display-name">Loading...</h3>
-          <p id="bio">Your bio goes here.</p>
           <p>Reputation Score: <span id="rep-score">0</span>/100</p>
-        </div>
-        <div class="card-back">
           <p>Sales: <span id="sales-count">0</span> | Purchases: <span id="purchase-count">0</span></p>
           <p>Badges: <span id="badges">None</span></p>
         </div>
+        <div class="card-back">
+          <p>Tap to flip back</p>
+        </div>
       </div>
     </div>
+    <h3 id="display-name">Loading...</h3>
+    <p id="bio">Your bio goes here.</p>
     <input type="text" id="nickname" placeholder="Nickname (e.g., RizzMaster)">
     <textarea id="bio-input" placeholder="Your bio (e.g., Selling epic PES mods)"></textarea>
     <input type="text" id="avatar-url" placeholder="Avatar URL (e.g., Imgur link)">
@@ -173,6 +183,7 @@
       <button onclick="setTheme('arcade')">Retro Arcade</button>
     </div>
     <button onclick="saveProfile()">Save Profile</button>
+    <button id="upload-btn" style="display: none;" onclick="window.location.href='upload.html'">Upload Item</button>
     <div class="dashboard">
       <h3 id="dashboard-title">Dashboard</h3>
       <ul id="dashboard-list"></ul>
@@ -192,6 +203,9 @@
       document.getElementById("purchase-count").textContent = getPurchaseCount();
       document.getElementById("badges").textContent = getBadges();
       document.getElementById("dashboard-title").textContent = user.role === "seller" ? "Seller Dashboard" : "Buyer Dashboard";
+      if (user.role === "seller") {
+        document.getElementById("upload-btn").style.display = "block";
+      }
       loadDashboard();
       applyTheme(user.theme || "default");
     }
@@ -271,15 +285,14 @@
     function startDragging(e) {
       isDragging = true;
       startX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-      panel.classList.add("active");
     }
 
     function drag(e) {
       if (!isDragging) return;
       const x = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-      if (startX - x > 50) {
+      if (x - startX > 50) {
         panel.classList.add("active");
-      } else {
+      } else if (startX - x > 50) {
         panel.classList.remove("active");
       }
     }
@@ -287,6 +300,11 @@
     function stopDragging() {
       isDragging = false;
     }
+
+    // Touch support for 3D card
+    document.querySelector(".profile-card").addEventListener("touchstart", () => {
+      document.querySelector(".profile-card").classList.toggle("touched");
+    });
   </script>
 </body>
 </html>
