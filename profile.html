@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +11,6 @@
       margin: 0;
       padding: 0;
       text-align: center;
-      transition: all 0.3s ease;
       overflow: hidden; /* Prevent page movement */
     }
     header {
@@ -38,11 +36,10 @@
       font-size: 1.2rem;
       font-weight: bold;
       color: #111;
-      cursor: grab;
+      cursor: pointer;
       z-index: 1001;
       box-shadow: 0 0 10px rgba(255, 165, 0, 0.7);
     }
-    .profile-btn:active { cursor: grabbing; }
     .profile-panel {
       position: fixed;
       top: 0;
@@ -52,11 +49,24 @@
       background: #1c1c1c;
       transition: left 0.5s ease;
       z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
       padding: 2rem;
       box-sizing: border-box;
       overflow-y: auto;
     }
     .profile-panel.active { left: 0; }
+    .stats-bar {
+      margin: 1rem 0;
+      background: #222;
+      padding: 1rem;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
     .profile-card {
       max-width: 500px;
       margin: 1rem auto;
@@ -81,9 +91,7 @@
       border-radius: 8px;
       text-align: center;
     }
-    .card-back {
-      transform: rotateY(180deg);
-    }
+    .card-back { transform: rotateY(180deg); }
     .profile-panel input, .profile-panel textarea {
       width: 100%;
       max-width: 400px;
@@ -106,17 +114,13 @@
       margin: 0.5rem auto;
       display: block;
     }
-    .profile-panel button:hover {
-      background: #ffb84d;
-    }
+    .profile-panel button:hover { background: #ffb84d; }
     .dashboard {
       max-width: 500px;
       margin: 1rem auto;
       text-align: center;
     }
-    .dashboard h3 {
-      color: orange;
-    }
+    .dashboard h3 { color: orange; }
     .dashboard ul {
       list-style: none;
       padding: 0;
@@ -129,23 +133,25 @@
       margin: 0.5rem 0;
       border-radius: 6px;
     }
-    .theme-switcher {
+    .theme-switcher, .avatar-picker {
       margin: 1rem auto;
       max-width: 400px;
       display: flex;
       justify-content: center;
       gap: 0.5rem;
+      flex-wrap: wrap;
     }
-    .theme-switcher button {
+    .avatar-img {
       width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0.5rem auto;
+      display: block;
+      object-fit: cover;
     }
-    .neon { background-color: #0a1a2b; color: #00ffcc; }
-    .neon .profile-panel { box-shadow: 0 0 20px rgba(0, 255, 204, 0.7); }
-    .arcade { background-color: #1a0a2b; color: #ff00ff; font-family: 'Courier New', monospace; }
-    .arcade .profile-panel { box-shadow: 0 0 20px rgba(255, 0, 255, 0.7); }
     @media (max-width: 600px) {
       .profile-panel { padding: 1rem; }
-      .profile-card, .dashboard, .theme-switcher, input, textarea, button {
+      .profile-card, .dashboard, .theme-switcher, .avatar-picker, input, textarea, button {
         max-width: 90%;
         margin-left: auto;
         margin-right: auto;
@@ -160,42 +166,45 @@
   </header>
   <div class="profile-btn">↔</div>
   <div class="profile-panel">
-    <div class="profile-card">
-      <div class="card-inner">
-        <div class="card-front">
-          <p>Reputation Score: <span id="rep-score">0</span>/100</p>
-          <p>Sales: <span id="sales-count">0</span> | Purchases: <span id="purchase-count">0</span></p>
-          <p>Badges: <span id="badges">None</span></p>
-        </div>
-        <div class="card-back">
-          <p>Tap to flip back</p>
-        </div>
-      </div>
-    </div>
-    <h3 id="display-name">Loading...</h3>
-    <p id="bio">Your bio goes here.</p>
-    <input type="text" id="nickname" placeholder="Nickname (e.g., RizzMaster)">
-    <textarea id="bio-input" placeholder="Your bio (e.g., Selling epic PES mods)"></textarea>
-    <input type="text" id="avatar-url" placeholder="Avatar URL (e.g., Imgur link)">
-    <div class="theme-switcher">
-      <button onclick="setTheme('default')">Default Theme</button>
-      <button onclick="setTheme('neon')">Neon Cyberpunk</button>
-      <button onclick="setTheme('arcade')">Retro Arcade</button>
-    </div>
-    <button onclick="saveProfile()">Save Profile</button>
-    <button id="upload-btn" style="display: none;" onclick="window.location.href='upload.html'">Upload Item</button>
-    <div class="dashboard">
-      <h3 id="dashboard-title">Dashboard</h3>
-      <ul id="dashboard-list"></ul>
-    </div>
-  </div>
+    <img id="avatar-img" src="https://via.placeholder.com/100" alt="Profile Picture" class="avatar-img">
+    <input type="file" id="avatar-upload" accept="image/*">
+    <div class="avatar-picker">
+      <button onclick="setAvatar('https://i.imgur.com/rizzpack.png')">Rizz Pack</button>
+      <button onclick="setAvatar('https://i.imgur.com/gamepad.png')">Gamepad</button>
+      <button onclick="setAvatar('https://i.imgur.com/python.png')">Python</button>
+    </div><!-- Stats Bar moved above credentials -->
+<div class="stats-bar">
+  <p>Reputation Score: <span id="rep-score">0</span>/100</p>
+  <p>Sales: <span id="sales-count">0</span> | Purchases: <span id="purchase-count">0</span></p>
+  <p>Badges: <span id="badges">None</span></p>
+</div>
 
-  <script>
+<h3 id="display-name">Loading...</h3>
+<p id="bio">Your bio goes here.</p>
+
+<input type="text" id="nickname" placeholder="Nickname (e.g., RizzMaster)">
+<textarea id="bio-input" placeholder="Your bio (e.g., Selling epic PES mods)"></textarea>
+
+<div class="theme-switcher">
+  <button onclick="setTheme('default')">Default Theme</button>
+  <button onclick="setTheme('neon')">Neon Cyberpunk</button>
+  <button onclick="setTheme('arcade')">Retro Arcade</button>
+</div>
+<button onclick="saveProfile()">Save Profile</button>
+<button id="upload-btn" onclick="window.location.href='upload.html'">Upload Item</button>
+
+<div class="dashboard">
+  <h3 id="dashboard-title">Dashboard</h3>
+  <ul id="dashboard-list"></ul>
+</div>
+
+  </div>  <script>
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
       alert("Please log in to view your profile.");
       window.location.href = "index.html";
     } else {
+      document.getElementById("avatar-img").src = user.avatarUrl || "https://via.placeholder.com/100";
       document.getElementById("display-name").textContent = user.nickname || user.displayName;
       document.getElementById("bio").textContent = user.bio || "Your bio goes here.";
       document.getElementById("rep-score").textContent = calculateRepScore();
@@ -203,8 +212,8 @@
       document.getElementById("purchase-count").textContent = getPurchaseCount();
       document.getElementById("badges").textContent = getBadges();
       document.getElementById("dashboard-title").textContent = user.role === "seller" ? "Seller Dashboard" : "Buyer Dashboard";
-      if (user.role === "seller") {
-        document.getElementById("upload-btn").style.display = "block";
+      if (user.role !== "seller") {
+        document.getElementById("upload-btn").style.display = "none";
       }
       loadDashboard();
       applyTheme(user.theme || "default");
@@ -215,15 +224,12 @@
       const purchases = JSON.parse(localStorage.getItem("purchases") || "[]");
       return Math.min((uploads.length + purchases.length) * 10, 100);
     }
-
     function getSalesCount() {
       return JSON.parse(localStorage.getItem("uploads") || "[]").filter(u => u.status === "approved").length;
     }
-
     function getPurchaseCount() {
       return JSON.parse(localStorage.getItem("purchases") || "[]").length;
     }
-
     function getBadges() {
       const sales = getSalesCount();
       const purchases = getPurchaseCount();
@@ -233,7 +239,6 @@
       if (sales >= 5) badges.push("Top Seller");
       return badges.length ? badges.join(", ") : "None";
     }
-
     function loadDashboard() {
       const list = document.getElementById("dashboard-list");
       if (user.role === "seller") {
@@ -244,11 +249,10 @@
         list.innerHTML = purchases.map(p => `<li>${p.name} - $${p.price} (Bought on ${p.date})</li>`).join("");
       }
     }
-
     function saveProfile() {
       const nickname = document.getElementById("nickname").value;
       const bio = document.getElementById("bio-input").value;
-      const avatarUrl = document.getElementById("avatar-url").value;
+      const avatarUrl = document.getElementById("avatar-img").src;
       localStorage.setItem("user", JSON.stringify({
         ...user,
         nickname: nickname || user.nickname || user.displayName,
@@ -258,53 +262,44 @@
       alert("Profile saved!");
       window.location.reload();
     }
-
     function setTheme(theme) {
       document.body.className = theme;
       localStorage.setItem("user", JSON.stringify({ ...user, theme }));
       applyTheme(theme);
     }
-
-    function applyTheme(theme) {
-      document.body.className = theme;
+    function applyTheme(theme) { document.body.className = theme; }
+    function setAvatar(url) {
+      document.getElementById("avatar-img").src = url;
+      localStorage.setItem("user", JSON.stringify({ ...user, avatarUrl: url }));
+      alert("Avatar updated!");
     }
 
-    // Draggable profile button
+    document.getElementById("avatar-upload").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const maxSize = 100;
+            canvas.width = maxSize;
+            canvas.height = maxSize;
+            ctx.drawImage(img, 0, 0, maxSize, maxSize);
+            const resizedUrl = canvas.toDataURL("image/jpeg", 0.7);
+            document.getElementById("avatar-img").src = resizedUrl;
+            localStorage.setItem("user", JSON.stringify({ ...user, avatarUrl: resizedUrl }));
+            alert("Profile picture updated!");
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
     const btn = document.querySelector(".profile-btn");
     const panel = document.querySelector(".profile-panel");
-    let isDragging = false;
-    let startX;
-
-    btn.addEventListener("mousedown", startDragging);
-    btn.addEventListener("touchstart", startDragging);
-    document.addEventListener("mousemove", drag);
-    document.addEventListener("touchmove", drag);
-    document.addEventListener("mouseup", stopDragging);
-    document.addEventListener("touchend", stopDragging);
-
-    function startDragging(e) {
-      isDragging = true;
-      startX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-    }
-
-    function drag(e) {
-      if (!isDragging) return;
-      const x = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-      if (x - startX > 50) {
-        panel.classList.add("active");
-      } else if (startX - x > 50) {
-        panel.classList.remove("active");
-      }
-    }
-
-    function stopDragging() {
-      isDragging = false;
-    }
-
-    // Touch support for 3D card
-    document.querySelector(".profile-card").addEventListener("touchstart", () => {
-      document.querySelector(".profile-card").classList.toggle("touched");
-    });
-  </script>
-</body>
+    btn.addEventListener("click", () => panel.classList.toggle("active"));
+  </script></body>
 </html>
