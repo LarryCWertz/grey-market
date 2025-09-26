@@ -1,134 +1,238 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Grey Market 🚀</title>
   <style>
-    body {
+    :root {
+      --bg: #111;
+      --card: #1c1c1c;
+      --muted: #bbb;
+      --accent: orange;
+      --text: #eee;
+    }
+
+    html,body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
       font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #eee;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      overflow: hidden; /* Prevent page movement */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
     }
-    header {
-      padding: 2rem 1rem;
-      position: relative;
-    }
-    header h1 {
-      font-size: 2rem;
-      margin: 0;
-    }
-    header p {
-      color: #bbb;
-      margin: 0.5rem 0 0;
-    }
-    .menu {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      padding: 2rem;
-      max-width: 1000px;
-      margin: auto;
-    }
-    .item {
-      background: #1c1c1c;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-    .item:hover {
-      transform: scale(1.05);
-      background: #292929;
-    }
-    .item h3 {
-      margin: 0 0 0.5rem;
-      color: orange;
-    }
-    .item p {
-      margin: 0 0 1rem;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-    .login-link {
-      display: inline-block;
-      margin: 1rem;
-      padding: 0.5rem 1rem;
-      background: orange;
-      color: #111;
-      text-decoration: none;
-      border-radius: 6px;
-    }
-    .login-link:hover {
-      background: #ffb84d;
-    }
+
+    /* Top-left fixed toggle button (motionless, not draggable) */
     .profile-btn {
       position: fixed;
-      top: 10px;
-      left: 10px;
-      width: 40px;
-      height: 40px;
-      background: orange;
-      border-radius: 0 6px 6px 0;
+      top: 12px;
+      left: 12px;
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      color: #111;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      z-index: 1200;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(255,165,0,0.15);
+      user-select: none;
+      text-decoration: none;
+    }
+
+    /* Horizontal swipe container */
+    .swipe-wrap {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth; /* smooth when JS scrolls */
+    }
+
+    /* Hide scrollbar but keep scroll ability */
+    .swipe-wrap::-webkit-scrollbar { height: 0; width: 0; }
+    .swipe-wrap { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .slide {
+      flex: 0 0 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      box-sizing: border-box;
+      padding: 72px 20px 20px 20px; /* top padding to avoid the fixed btn */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* Main page content */
+    .main-header {
+      width: 100%;
+      max-width: 1100px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #111;
-      cursor: pointer;
-      z-index: 1001;
-      box-shadow: 0 0 10px rgba(255, 165, 0, 0.7);
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
     }
+
+    .brand {
+      text-align: left;
+    }
+    .brand h1 { margin: 0; color: var(--accent); font-size: 1.6rem; }
+    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+    .login-link {
+      background: var(--accent);
+      color: #111;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .menu {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .item {
+      background: var(--card);
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    }
+    .item h3 { margin: 0 0 8px 0; color: var(--accent); }
+    .item p { margin: 0; color: #bdbdbd; font-size: 0.95rem; }
+
+    /* Profile slide: iframe so your profile.html remains single source */
+    .profile-frame {
+      width: 100%;
+      max-width: 1100px;
+      height: calc(100vh - 140px);
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+      background: #0f0f0f;
+      overflow: hidden;
+    }
+
+    /* small screens adjustments */
+    @media (max-width:800px) {
+      .main-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .profile-frame { height: calc(100vh - 120px); }
+      .profile-btn { width: 40px; height: 40px; top: 10px; left: 10px; }
+      .brand h1 { font-size: 1.25rem; }
+    }
+
   </style>
 </head>
 <body>
-  <header>
-    <h1>Grey Market 🚀</h1>
-    <p>Your all-in-one hub — free version</p>
-    <a href="login.html" class="login-link">Login to Access Marketplace</a>
-    <div class="profile-btn">↔</div>
-  </header>  <section class="menu">
-    <div class="item">
-      <h3>Rizz Pack</h3>
-      <p>Lines & vibes to keep convos alive.</p>
-    </div>
-    <div class="item">
-      <h3>Python Scripts</h3>
-      <p>Useful mini-scripts like JPG→XML converter.</p>
-    </div>
-    <div class="item">
-      <h3>PES Mods</h3>
-      <p>Patch your game, keep it fresh.</p>
-    </div>
-    <div class="item">
-      <h3>Music</h3>
-      <p>Free beats, vibes, and loops.</p>
-    </div>
-    <div class="item">
-      <h3>Game Sensitivity</h3>
-      <p>COD, Free Fire & more configs.</p>
-    </div>
-  </section>  <script>
-    const user = JSON.parse(localStorage.getItem("user"));
 
-    if (user) {
-      // Show marketplace, hide login link
-      document.querySelector(".menu").style.display = "grid";
-      document.querySelector(".login-link").style.display = "none";
-      console.log("Welcome, " + user.displayName);
+  <!-- fixed motionless button: toggles between home/profile -->
+  <a class="profile-btn" id="toggleBtn" role="button" aria-label="Toggle profile">↔</a>
 
-      // Profile button goes directly to profile page
-      document.querySelector(".profile-btn").onclick = () => {
-        window.location.href = "profile.html";
-      };
-    } else {
-      // Show login link, hide marketplace
-      document.querySelector(".menu").style.display = "none";
-      document.querySelector(".login-link").style.display = "inline-block";
-    }
-  </script></body>
+  <!-- two slides only: Home (index) and Profile (loaded via iframe) -->
+  <div class="swipe-wrap" id="swipeWrap" tabindex="0">
+
+    <!-- Home slide -->
+    <section class="slide" id="home">
+      <div class="main-header">
+        <div class="brand">
+          <h1>Grey Market 🚀</h1>
+          <p>Your all-in-one hub — free version</p>
+        </div>
+        <a href="login.html" class="login-link" id="loginLink">Login</a>
+      </div>
+
+      <section class="menu" aria-label="marketplace">
+        <div class="item">
+          <h3>Rizz Pack</h3>
+          <p>Lines & vibes to keep convos alive.</p>
+        </div>
+        <div class="item">
+          <h3>Python Scripts</h3>
+          <p>Useful mini-scripts like JPG→XML converter.</p>
+        </div>
+        <div class="item">
+          <h3>PES Mods</h3>
+          <p>Patch your game, keep it fresh.</p>
+        </div>
+        <div class="item">
+          <h3>Music</h3>
+          <p>Free beats, vibes, and loops.</p>
+        </div>
+        <div class="item">
+          <h3>Game Sensitivity</h3>
+          <p>COD, Free Fire & more configs.</p>
+        </div>
+      </section>
+    </section>
+
+    <!-- Profile slide -->
+    <section class="slide" id="profile">
+      <!-- load the actual profile page so you keep single source -->
+      <iframe src="profile.html" title="Profile" class="profile-frame" id="profileFrame"></iframe>
+    </section>
+
+  </div>
+
+  <script>
+    // Minimal JS only for toggle + UX; swiping works natively via touch/drag (scroll-snap).
+    (function () {
+      const wrap = document.getElementById('swipeWrap');
+      const btn = document.getElementById('toggleBtn');
+
+      // helper to tell if we're at left (home) or right (profile) slide
+      function atProfile() {
+        // use round to avoid subpixel blips
+        return Math.round(wrap.scrollLeft) >= (wrap.clientWidth / 2);
+      }
+
+      // toggle behavior: if home => go profile; if profile => go home
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!atProfile()) {
+          wrap.scrollTo({ left: wrap.clientWidth, behavior: 'smooth' });
+        } else {
+          wrap.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+      });
+
+      // if user is logged in, show market + hide login link
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      if (user) {
+        document.getElementById('loginLink').style.display = 'none';
+      } else {
+        // non-logged users shouldn't see marketplace; show login only
+        // But still keep layout intact so swiper has exactly two slides (no blank)
+        document.querySelector('.menu').style.display = 'none';
+        document.getElementById('loginLink').style.display = 'inline-block';
+      }
+
+      // Keyboard arrows for dev/testing
+      window.addEventListener('keydown', (ev) => {
+        if (ev.key === 'ArrowRight') {
+          wrap.scrollTo({ left: wrap.clientWidth, behavior: 'smooth' });
+        } else if (ev.key === 'ArrowLeft') {
+          wrap.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+      });
+
+      // Prevent weird extra scroll beyond slides on some browsers
+      // Snap back if out of bounds
+      wrap.addEventListener('scroll', () => {
+        // nothing heavy; we let native scroll-snap handle it
+      });
+    })();
+  </script>
+</body>
 </html>
