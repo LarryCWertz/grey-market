@@ -1,299 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Grey Market 🚀</title>
-<style>
-  /* Reset basics */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html,body { height: 100%; }
-  body {
-    font-family: Arial, sans-serif;
-    background: #111;
-    color: #eee;
-    overflow: hidden; /* container handles scroll */
-    -webkit-font-smoothing: antialiased;
-  }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Grey Market 🚀</title>
+  <style>
+    :root {
+      --bg: #111;
+      --card: #1c1c1c;
+      --muted: #bbb;
+      --accent: orange;
+      --text: #eee;
+    }
 
-  /* Top-left fixed, motionless swiper button */
-  .profile-btn {
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    width: 44px;
-    height: 44px;
-    background: orange;
-    color: #111;
-    border-radius: 8px;
-    display: grid;
-    place-items: center;
-    z-index: 1200;
-    cursor: pointer;
-    user-select: none;
-    box-shadow: 0 6px 18px rgba(255,165,0,0.12);
-  }
+    html,body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+    }
 
-  /* Outer viewport that masks the sliding pages */
-  .viewport {
-    width: 100%;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-  }
+    /* Top-left fixed toggle button (motionless, not draggable) */
+    .profile-btn {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      color: #111;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      z-index: 1200;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(255,165,0,0.15);
+      user-select: none;
+      text-decoration: none;
+    }
 
-  /* Slider holds exactly two pages, side-by-side */
-  .slider {
-    display: flex;
-    width: 200%;
-    height: 100%;
-    transform: translateX(0);
-    transition: transform 280ms cubic-bezier(.2,.8,.2,1);
-    touch-action: pan-y; /* allow vertical scroll within pages if needed */
-  }
+    /* Horizontal swipe container */
+    .swipe-wrap {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth; /* smooth when JS scrolls */
+    }
 
-  /* Each page is full width (100%) and full height */
-  .page {
-    width: 100%;
-    min-width: 100%;
-    height: 100%;
-    padding: 80px 20px 24px; /* top padding to avoid fixed btn */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+    /* Hide scrollbar but keep scroll ability */
+    .swipe-wrap::-webkit-scrollbar { height: 0; width: 0; }
+    .swipe-wrap { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Shared header center alignment */
-  .brand {
-    text-align: center;
-    margin-bottom: 18px;
-  }
-  .brand h1 { color: orange; font-size: 1.6rem; margin-bottom: 6px; }
-  .brand p { color: #bbb; font-size: 0.95rem; }
+    .slide {
+      flex: 0 0 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      box-sizing: border-box;
+      padding: 72px 20px 20px 20px; /* top padding to avoid the fixed btn */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
 
-  /* Menu: vertical stacked items, centered */
-  .menu {
-    width: 100%;
-    max-width: 640px;
-    display: flex;
-    flex-direction: column; /* ALWAYS vertical stack as you demanded */
-    gap: 12px;
-    margin-top: 14px;
-    align-items: stretch; /* items stretch to container width */
-  }
-  .item {
-    background: #1c1c1c;
-    padding: 14px;
-    border-radius: 10px;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.45);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .item h3 { color: orange; font-size: 1.05rem; margin: 0; }
-  .item p { color: #cfcfcf; font-size: .95rem; margin: 0; }
+    /* Main page content */
+    .main-header {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
 
-  /* Login button (kept simple) */
-  .login-link {
-    margin-top: 10px;
-    background: orange;
-    color: #111;
-    padding: 8px 12px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 700;
-    display: inline-block;
-  }
+    .brand {
+      text-align: left;
+    }
+    .brand h1 { margin: 0; color: var(--accent); font-size: 1.6rem; }
+    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
 
-  /* PROFILE page layout (centered, consistent) */
-  .profile-card {
-    width: 100%;
-    max-width: 640px;
-    background: #131313;
-    padding: 18px;
-    border-radius: 10px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.6);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-  }
-  .profile-avatar {
-    width: 96px; height: 96px; border-radius: 50%;
-    object-fit: cover; background: #222;
-  }
-  .profile-name { font-size: 1.2rem; color: orange; }
-  .profile-bio { color: #ccc; text-align: center; }
+    .login-link {
+      background: var(--accent);
+      color: #111;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 700;
+    }
 
-  /* Desktop tweaks: keep vertical but center container and add padding */
-  @media (min-width: 900px) {
-    .page { padding: 100px 40px 40px; }
-    .brand h1 { font-size: 1.8rem; }
-    .item { padding: 18px; }
-  }
+    .menu {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
 
-  /* Prevent horizontal scrollbars from showing on small devices with safe area insets */
-  @supports (padding: max(0px)) {
-    .page { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
-  }
-</style>
+    .item {
+      background: var(--card);
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    }
+    .item h3 { margin: 0 0 8px 0; color: var(--accent); }
+    .item p { margin: 0; color: #bdbdbd; font-size: 0.95rem; }
+
+    /* Profile slide: iframe so your profile.html remains single source */
+    .profile-frame {
+      width: 100%;
+      max-width: 1100px;
+      height: calc(100vh - 140px);
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+      background: #0f0f0f;
+      overflow: hidden;
+    }
+
+    /* small screens adjustments */
+    @media (max-width:800px) {
+      .main-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .profile-frame { height: calc(100vh - 120px); }
+      .profile-btn { width: 40px; height: 40px; top: 10px; left: 10px; }
+      .brand h1 { font-size: 1.25rem; }
+    }
+
+  </style>
 </head>
 <body>
 
-  <!-- fixed swiper toggle -->
-  <div class="profile-btn" id="swipeBtn" aria-label="Toggle profile">↔</div>
+  <!-- fixed motionless button: toggles between home/profile -->
+  <a class="profile-btn" id="toggleBtn" role="button" aria-label="Toggle profile">↔</a>
 
-  <!-- main viewport -->
-  <div class="viewport" id="viewport">
-    <div class="slider" id="slider">
-      <!-- Page 0: Main -->
-      <section class="page" id="page-main" aria-label="Home">
+  <!-- two slides only: Home (index) and Profile (loaded via iframe) -->
+  <div class="swipe-wrap" id="swipeWrap" tabindex="0">
+
+    <!-- Home slide -->
+    <section class="slide" id="home">
+      <div class="main-header">
         <div class="brand">
           <h1>Grey Market 🚀</h1>
-          <p>Your all-in-one hub — clean & free</p>
+          <p>Your all-in-one hub — free version</p>
         </div>
+        <a href="login.html" class="login-link" id="loginLink">Login</a>
+      </div>
 
-        <!-- login shown only when not logged -->
-        <a href="login.html" class="login-link" id="loginLink">Login to Access Marketplace</a>
-
-        <!-- vertical stacked menu -->
-        <nav class="menu" id="mainMenu" aria-label="Marketplace">
-          <div class="item"><h3>Rizz Pack</h3><p>Lines & vibes to keep convos alive.</p></div>
-          <div class="item"><h3>Python Scripts</h3><p>Useful mini-scripts like JPG→XML converter.</p></div>
-          <div class="item"><h3>PES Mods</h3><p>Patch your game, keep it fresh.</p></div>
-          <div class="item"><h3>Music</h3><p>Free beats, vibes, and loops.</p></div>
-          <div class="item"><h3>Game Sensitivity</h3><p>COD, Free Fire & more configs.</p></div>
-        </nav>
-      </section>
-
-      <!-- Page 1: Profile -->
-      <section class="page" id="page-profile" aria-label="Profile">
-        <div class="profile-card" id="profileCard">
-          <img alt="avatar" id="avatar" class="profile-avatar" src="https://via.placeholder.com/96">
-          <div class="profile-name" id="displayName">Loading...</div>
-          <div class="profile-bio" id="profileBio">Your bio goes here</div>
-
-          <!-- seller upload button; hidden by default for non-sellers -->
-          <button id="uploadBtn" style="display:none; padding:10px 14px; border-radius:8px; border:none; background:orange; color:#111; font-weight:700; cursor:pointer;">Upload Item</button>
+      <section class="menu" aria-label="marketplace">
+        <div class="item">
+          <h3>Rizz Pack</h3>
+          <p>Lines & vibes to keep convos alive.</p>
+        </div>
+        <div class="item">
+          <h3>Python Scripts</h3>
+          <p>Useful mini-scripts like JPG→XML converter.</p>
+        </div>
+        <div class="item">
+          <h3>PES Mods</h3>
+          <p>Patch your game, keep it fresh.</p>
+        </div>
+        <div class="item">
+          <h3>Music</h3>
+          <p>Free beats, vibes, and loops.</p>
+        </div>
+        <div class="item">
+          <h3>Game Sensitivity</h3>
+          <p>COD, Free Fire & more configs.</p>
         </div>
       </section>
-    </div>
+    </section>
+
+    <!-- Profile slide -->
+    <section class="slide" id="profile">
+      <!-- load the actual profile page so you keep single source -->
+      <iframe src="profile.html" title="Profile" class="profile-frame" id="profileFrame"></iframe>
+    </section>
+
   </div>
 
-<script>
-/* Mobile-first two-page swiper + button toggle + touch swipe support.
-   Behavior:
-   - currentIndex = 0 (main) or 1 (profile)
-   - click top-left button toggles between pages
-   - swipe left/right supported via touch events
-   - no blank slides, strict 2 pages only
-*/
+  <script>
+    // Minimal JS only for toggle + UX; swiping works natively via touch/drag (scroll-snap).
+    (function () {
+      const wrap = document.getElementById('swipeWrap');
+      const btn = document.getElementById('toggleBtn');
 
-(function () {
-  const slider = document.getElementById('slider');
-  const swipeBtn = document.getElementById('swipeBtn');
-  const viewport = document.getElementById('viewport');
-  let currentIndex = 0; // 0 main, 1 profile
+      // helper to tell if we're at left (home) or right (profile) slide
+      function atProfile() {
+        // use round to avoid subpixel blips
+        return Math.round(wrap.scrollLeft) >= (wrap.clientWidth / 2);
+      }
 
-  /* helper to set translate */
-  function showIndex(i, instant=false) {
-    currentIndex = i ? 1 : 0;
-    if (instant) slider.style.transition = 'none';
-    else slider.style.transition = 'transform 280ms cubic-bezier(.2,.8,.2,1)';
-    slider.style.transform = `translateX(-${currentIndex * 100}%)`;
-    // small microtask to re-enable transition if disabled
-    if (instant) requestAnimationFrame(() => { slider.style.transition = 'transform 280ms cubic-bezier(.2,.8,.2,1)'; });
-  }
+      // toggle behavior: if home => go profile; if profile => go home
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!atProfile()) {
+          wrap.scrollTo({ left: wrap.clientWidth, behavior: 'smooth' });
+        } else {
+          wrap.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+      });
 
-  /* button toggles pages */
-  swipeBtn.addEventListener('click', () => {
-    showIndex(currentIndex === 0 ? 1 : 0);
-  });
+      // if user is logged in, show market + hide login link
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      if (user) {
+        document.getElementById('loginLink').style.display = 'none';
+      } else {
+        // non-logged users shouldn't see marketplace; show login only
+        // But still keep layout intact so swiper has exactly two slides (no blank)
+        document.querySelector('.menu').style.display = 'none';
+        document.getElementById('loginLink').style.display = 'inline-block';
+      }
 
-  /* --- Touch swipe logic --- */
-  let startX = 0, deltaX = 0, isTouching = false;
+      // Keyboard arrows for dev/testing
+      window.addEventListener('keydown', (ev) => {
+        if (ev.key === 'ArrowRight') {
+          wrap.scrollTo({ left: wrap.clientWidth, behavior: 'smooth' });
+        } else if (ev.key === 'ArrowLeft') {
+          wrap.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+      });
 
-  viewport.addEventListener('touchstart', (ev) => {
-    if (ev.touches.length !== 1) return;
-    isTouching = true;
-    startX = ev.touches[0].clientX;
-    slider.style.transition = 'none';
-  }, {passive: true});
-
-  viewport.addEventListener('touchmove', (ev) => {
-    if (!isTouching) return;
-    deltaX = ev.touches[0].clientX - startX;
-    // restrict horizontal drag only between 0 and -100%
-    const width = viewport.clientWidth;
-    let base = -currentIndex * width;
-    let next = base + deltaX;
-    // clamp between 0 (home) and -width (profile)
-    next = Math.max(Math.min(next, 0), -width);
-    slider.style.transform = `translateX(${next}px)`;
-  }, {passive: true});
-
-  viewport.addEventListener('touchend', (ev) => {
-    if (!isTouching) return;
-    isTouching = false;
-    const width = viewport.clientWidth;
-    // detect swipe threshold (20% of width) or speed via deltaX
-    if (Math.abs(deltaX) > width * 0.18) {
-      // swiped left?
-      if (deltaX < 0) showIndex(1);
-      else showIndex(0);
-    } else {
-      // small movement, snap back
-      showIndex(currentIndex);
-    }
-    // reset
-    deltaX = 0;
-  }, {passive: true});
-
-  /* Keyboard support for debugging */
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') showIndex(0);
-    if (e.key === 'ArrowRight') showIndex(1);
-  });
-
-  /* --- user logic: show/hide login and upload properly --- */
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const loginLink = document.getElementById('loginLink');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const displayName = document.getElementById('displayName');
-  const profileBio = document.getElementById('profileBio');
-  const avatar = document.getElementById('avatar');
-
-  if (user) {
-    // hide login link on main page
-    if (loginLink) loginLink.style.display = 'none';
-    // populate profile
-    displayName.textContent = user.nickname || user.displayName || 'Unnamed';
-    profileBio.textContent = user.bio || 'No bio yet.';
-    avatar.src = user.avatarUrl || avatar.src;
-    // show upload button only for seller role
-    if (user.role === 'seller') {
-      uploadBtn.style.display = 'block';
-      uploadBtn.onclick = () => window.location.href = 'upload.html';
-    } else {
-      uploadBtn.style.display = 'none';
-    }
-  } else {
-    // not logged in: hide menu but keep layout to avoid blank slide
-    const menu = document.getElementById('mainMenu');
-    if (menu) menu.style.display = 'none';
-    if (loginLink) loginLink.style.display = 'inline-block';
-    // keep profile showing default placeholders
-  }
-
-  /* Ensure we start at main instantly (no flicker) */
-  showIndex(0, true);
-
-  /* If viewport resizes (orientation change) snap back to correct position */
-  window.addEventListener('resize', () => { showIndex(currentIndex, true); });
-})();
-</script>
-
+      // Prevent weird extra scroll beyond slides on some browsers
+      // Snap back if out of bounds
+      wrap.addEventListener('scroll', () => {
+        // nothing heavy; we let native scroll-snap handle it
+      });
+    })();
+  </script>
 </body>
 </html>
